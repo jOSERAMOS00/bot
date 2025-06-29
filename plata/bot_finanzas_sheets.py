@@ -155,7 +155,6 @@ def obtener_ultimos_movimientos(sheet_object, num_movimientos=10):
             monto = f"${int(float(move[2])):,}" if len(move) > 2 and move[2].strip() else "$0"
             fecha = move[3] if len(move) > 3 else "Fecha desconocida"
             
-            # Formato más profesional
             formatted_moves.append(f"• Fecha: {fecha} | Tipo: {movimiento.upper()} | Monto: {monto} | Descripción: {descripcion}")
         
         return formatted_moves
@@ -168,11 +167,11 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Inicia la conversación y muestra el menú principal."""
     reply_keyboard = [["1", "2"], ["3", "4"]]
     await update.message.reply_text(
-        "👋 Bienvenido. ¿Qué desea hacer?\n\n" # Mensaje de bienvenida más formal
-        "1️⃣ Registrar un nuevo movimiento\n" # Texto de opción más formal y claro
-        "2️⃣ Consultar saldo\n" # Texto de opción más formal y claro
-        "3️⃣ Finalizar sesión\n" # Texto de opción más formal
-        "4️⃣ Ver historial de movimientos", # Texto de opción más formal
+        "👋 Bienvenido. ¿Qué desea hacer?\n\n"
+        "1️⃣ Registrar un nuevo movimiento\n"
+        "2️⃣ Consultar saldo\n"
+        "3️⃣ Finalizar sesión\n"
+        "4️⃣ Ver historial de movimientos",
         reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True, resize_keyboard=True)
     )
     context.user_data["temp_data"] = {}
@@ -186,7 +185,7 @@ async def menu_principal(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if opcion == "1": # Registrar movimiento
         reply_keyboard = [["1", "2"]]
         await update.message.reply_text(
-            "📝 Por favor, seleccione la cuenta para el registro:\n" # Emoji ajustado y texto formal
+            "📝 Por favor, seleccione la cuenta para el registro:\n"
             "1️⃣ Personal\n"
             "2️⃣ Negocio",
             reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True, resize_keyboard=True)
@@ -196,7 +195,7 @@ async def menu_principal(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif opcion == "2": # Ver saldo
         reply_keyboard = [["1", "2"]]
         await update.message.reply_text(
-            "📊 Por favor, seleccione la cuenta para consultar el saldo:\n" # Emoji ajustado y texto formal
+            "📊 Por favor, seleccione la cuenta para consultar el saldo:\n"
             "1️⃣ Personal\n"
             "2️⃣ Negocio",
             reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True, resize_keyboard=True)
@@ -204,13 +203,13 @@ async def menu_principal(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return VER_SALDO_SELECCION_CUENTA
 
     elif opcion == "3": # Salir
-        await update.message.reply_text("👋 Sesión finalizada. Gracias por usar el gestor financiero.") # Mensaje de despedida más formal
+        await update.message.reply_text("👋 Sesión finalizada. Gracias por usar el gestor financiero.")
         return ConversationHandler.END
     
     elif opcion == "4": # Ver últimos movimientos
         reply_keyboard = [["1", "2"]]
         await update.message.reply_text(
-            "🔎 Por favor, seleccione la cuenta para ver el historial:\n" # Emoji y texto ajustados
+            "🔎 Por favor, seleccione la cuenta para ver el historial:\n"
             "1️⃣ Personal\n"
             "2️⃣ Negocio",
             reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True, resize_keyboard=True)
@@ -218,7 +217,7 @@ async def menu_principal(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return VER_ULTIMOS_MOVIMIENTOS_SELECCION_CUENTA
 
     else:
-        await update.message.reply_text("❌ Opción inválida. Por favor, elija una de las opciones numéricas.") # Formalizado
+        await update.message.reply_text("❌ Opción inválida. Por favor, elija una de las opciones numéricas.")
         return MENU_PRINCIPAL
 
 async def tipo_cuenta(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -238,7 +237,7 @@ async def tipo_cuenta(update: Update, context: ContextTypes.DEFAULT_TYPE):
         selected_sheet_obj = sheet_negocios
         account_name = SHEET_NAME_NEGOCIOS
     else:
-        await update.message.reply_text("❌ Opción inválida. Por favor, elija 1 para Personal o 2 para Negocio.") # Formalizado
+        await update.message.reply_text("❌ Opción inválida. Por favor, elija 1 para Personal o 2 para Negocio.")
         return TIPO_CUENTA
 
     context.user_data["selected_sheet"] = selected_sheet_obj
@@ -246,8 +245,8 @@ async def tipo_cuenta(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     reply_keyboard = [["1", "2"]]
     await update.message.reply_text(
-        "➡️ Indique el tipo de movimiento:\n" # Emoji ajustado y texto formal
-        "1️⃣ Crédito (+)\n" # Símbolo de suma/resta más claro
+        "➡️ Indique el tipo de movimiento:\n"
+        "1️⃣ Crédito (+)\n"
         "2️⃣ Débito (-)",
         reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True, resize_keyboard=True)
     )
@@ -259,52 +258,76 @@ async def tipo_movimiento(update: Update, context: ContextTypes.DEFAULT_TYPE):
     movimiento = "Crédito" if opcion == "1" else "Débito" if opcion == "2" else None
 
     if not movimiento:
-        await update.message.reply_text("❌ Opción inválida. Por favor, elija 1 para Crédito o 2 para Débito.") # Formalizado
+        await update.message.reply_text("❌ Opción inválida. Por favor, elija 1 para Crédito o 2 para Débito.")
         return TIPO_MOVIMIENTO
 
     context.user_data.setdefault("temp_data", {})["movimiento"] = movimiento
-    await update.message.reply_text("✍️ Por favor, ingrese una descripción para el movimiento:") # Emoji y texto ajustados
+    await update.message.reply_text("✍️ Por favor, ingrese una descripción para el movimiento:")
     return DESCRIPCION
 
 async def descripcion(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Solicita la descripción del movimiento."""
     context.user_data.setdefault("temp_data", {})["descripcion"] = update.message.text
     
-    reply_keyboard = [["Hoy", "Ayer", "Anteayer"]]
+    # Define las opciones de monto preestablecidas
+    opciones_monto = [["10000", "20000", "50000"]] # Los montos como strings para los botones
+    # Combina las opciones de monto con las opciones de fecha
+    # Opciones de monto en una fila, y opciones de fecha en otra.
+    reply_keyboard_monto_fecha = opciones_monto + [["Hoy", "Ayer", "Anteayer"]]
+
     await update.message.reply_text(
-        "💲 Por favor, ingrese el monto (número entero sin decimales):", # Emoji y texto ajustados
-        reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True, resize_keyboard=True)
+        "💲 Por favor, ingrese el monto (número entero sin decimales):\n"
+        "O elija una opción rápida:", # Mensaje actualizado
+        reply_markup=ReplyKeyboardMarkup(reply_keyboard_monto_fecha, one_time_keyboard=True, resize_keyboard=True)
     )
     return MONTO
 
 async def monto(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     Solicita el monto del movimiento y valida que sea un número entero positivo.
+    Ahora también acepta montos preestablecidos.
     """
-    try:
-        monto_str = update.message.text.strip()
-        monto_valor = int(monto_str)
+    monto_str_input = update.message.text.strip()
+    monto_valor = None
+    
+    # Opciones de monto preestablecidas como strings para comparación
+    predefined_amounts_str = ["10000", "20000", "50000"]
 
+    try:
+        # Primero, intenta si la entrada es uno de los montos preestablecidos
+        if monto_str_input in predefined_amounts_str:
+            monto_valor = int(monto_str_input) # Si es preestablecido, ya sabemos que es un entero válido
+        else:
+            # Si no es preestablecido, intenta convertirlo a entero y validar
+            monto_valor = int(monto_str_input)
+
+        # Validar que sea positivo
         if monto_valor <= 0:
-            reply_keyboard = [["Hoy", "Ayer", "Anteayer"]]
+            # Vuelve a mostrar las opciones de monto y fecha
+            opciones_monto = [["10000", "20000", "50000"]]
+            reply_keyboard_monto_fecha = opciones_monto + [["Hoy", "Ayer", "Anteayer"]]
             await update.message.reply_text(
-                "❌ Monto inválido. Debe ser un número entero positivo. Intente de nuevo:", # Formalizado
-                reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True, resize_keyboard=True)
+                "❌ Monto inválido. Debe ser un número entero positivo. Intente de nuevo:",
+                reply_markup=ReplyKeyboardMarkup(reply_keyboard_monto_fecha, one_time_keyboard=True, resize_keyboard=True)
             )
-            return MONTO
+            return MONTO # Quédate en este estado
             
         context.user_data.setdefault("temp_data", {})["monto"] = monto_valor
     except ValueError:
-        reply_keyboard = [["Hoy", "Ayer", "Anteayer"]]
+        # Esto captura errores si el input no es un número entero (ej. texto, decimales)
+        # Vuelve a mostrar las opciones de monto y fecha
+        opciones_monto = [["10000", "20000", "50000"]]
+        reply_keyboard_monto_fecha = opciones_monto + [["Hoy", "Ayer", "Anteayer"]]
         await update.message.reply_text(
-            "❌ Monto inválido. Debe ser un número entero y sin decimales (ej. 100, 500). Intente de nuevo:", # Formalizado
-            reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True, resize_keyboard=True)
+            "❌ Monto inválido. Debe ser un número entero y sin decimales (ej. 100, 500). Intente de nuevo:",
+            reply_markup=ReplyKeyboardMarkup(reply_keyboard_monto_fecha, one_time_keyboard=True, resize_keyboard=True)
         )
-        return MONTO
+        return MONTO # Quédate en este estado
 
+    # Si el monto es válido (sea preestablecido o manual), procede a pedir la fecha
     reply_keyboard = [["Hoy", "Ayer", "Anteayer"]]
     await update.message.reply_text(
-        "🗓️ Seleccione o ingrese la fecha del movimiento (YYYY-MM-DD):", # Emoji y texto ajustados
+        "🗓️ Seleccione o ingrese la fecha del movimiento (YYYY-MM-DD):",
         reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True, resize_keyboard=True)
     )
     return FECHA
@@ -331,7 +354,7 @@ async def fecha(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except ValueError:
             reply_keyboard = [["Hoy", "Ayer", "Anteayer"]]
             await update.message.reply_text(
-                "❌ Formato de fecha inválido. Por favor, elija una opción o ingrese la fecha en formato YYYY-MM-DD:", # Formalizado
+                "❌ Formato de fecha inválido. Por favor, elija una opción o ingrese la fecha en formato YYYY-MM-DD:",
                 reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True, resize_keyboard=True)
             )
             return FECHA
@@ -357,13 +380,13 @@ async def fecha(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     reply_keyboard = [["1", "2"], ["3", "4"]]
     await update.message.reply_text(
-        f"✅ Movimiento registrado exitosamente en '{account_name}'.\n" # Texto más formal
-        f"💰 Su saldo actual en '{account_name}' es: ${saldo_actual:,.0f}\n\n" # Formalizado "Su"
-        f"¿Qué desea hacer ahora?\n" # Formalizado "desea"
+        f"✅ Movimiento registrado exitosamente en '{account_name}'.\n"
+        f"💰 Su saldo actual en '{account_name}' es: ${saldo_actual:,.0f}\n\n"
+        f"¿Qué desea hacer ahora?\n"
         "1️⃣ Registrar un nuevo movimiento\n"
         "2️⃣ Consultar saldo\n"
         "3️⃣ Finalizar sesión\n"
-        "4️⃣ Ver historial de movimientos", # Texto de opción más formal
+        "4️⃣ Ver historial de movimientos",
         reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True, resize_keyboard=True)
     )
     return MENU_PRINCIPAL
@@ -384,14 +407,14 @@ async def ver_saldo_seleccion_cuenta(update: Update, context: ContextTypes.DEFAU
         selected_sheet_for_saldo = sheet_negocios
         account_name = SHEET_NAME_NEGOCIOS
     else:
-        await update.message.reply_text("❌ Opción inválida. Por favor, elija 1 para Personal o 2 para Negocio.") # Formalizado
+        await update.message.reply_text("❌ Opción inválida. Por favor, elija 1 para Personal o 2 para Negocio.")
         return VER_SALDO_SELECCION_CUENTA 
 
     if selected_sheet_for_saldo:
         saldo = calcular_saldo_desde_movimientos(selected_sheet_for_saldo)
-        await update.message.reply_text(f"💰 Su saldo actual en '{account_name}' es: ${saldo:,.0f}") # Formalizado "Su"
+        await update.message.reply_text(f"💰 Su saldo actual en '{account_name}' es: ${saldo:,.0f}")
     else:
-        await update.message.reply_text("🚫 Hubo un error al seleccionar la cuenta. Por favor, intente de nuevo.") # Formalizado y emoji
+        await update.message.reply_text("🚫 Hubo un error al seleccionar la cuenta. Por favor, intente de nuevo.")
     
     return await start(update, context)
 
@@ -412,7 +435,7 @@ async def ver_ultimos_movimientos_seleccion_cuenta(update: Update, context: Cont
         selected_sheet_for_moves = sheet_negocios
         account_name = SHEET_NAME_NEGOCIOS
     else:
-        await update.message.reply_text("❌ Opción inválida. Por favor, elija 1 para Personal o 2 para Negocio.") # Formalizado
+        await update.message.reply_text("❌ Opción inválida. Por favor, elija 1 para Personal o 2 para Negocio.")
         return VER_ULTIMOS_MOVIMIENTOS_SELECCION_CUENTA
 
     if selected_sheet_for_moves:
@@ -420,18 +443,17 @@ async def ver_ultimos_movimientos_seleccion_cuenta(update: Update, context: Cont
         
         if ultimos_movimientos:
             moves_text = "\n".join(ultimos_movimientos)
-            # Título más profesional para el historial
             await update.message.reply_text(
                 f"📄 **Historial de Movimientos Recientes en '{account_name}':**\n\n"
                 f"| Fecha       | Tipo     | Monto    | Descripción             |\n"
-                f"|:------------|:---------|:---------|:------------------------|\n" # Encabezado de tabla Markdown
+                f"|:------------|:---------|:---------|:------------------------|\n"
                 f"{moves_text}",
                 parse_mode='Markdown'
             )
         else:
             await update.message.reply_text(f"No hay movimientos registrados en '{account_name}' aún.")
     else:
-        await update.message.reply_text("🚫 Hubo un error al seleccionar la cuenta. Por favor, intente de nuevo.") # Formalizado y emoji
+        await update.message.reply_text("🚫 Hubo un error al seleccionar la cuenta. Por favor, intente de nuevo.")
     
     return await start(update, context)
 

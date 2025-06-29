@@ -266,19 +266,16 @@ async def tipo_movimiento(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return DESCRIPCION
 
 async def descripcion(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Solicita la descripción del movimiento."""
+    """Solicita la descripción del movimiento y luego el monto con opciones preestablecidas."""
     context.user_data.setdefault("temp_data", {})["descripcion"] = update.message.text
     
-    # Define las opciones de monto preestablecidas
+    # Define SOLO las opciones de monto preestablecidas para este paso
     opciones_monto = [["10000", "20000", "50000"]] # Los montos como strings para los botones
-    # Combina las opciones de monto con las opciones de fecha
-    # Opciones de monto en una fila, y opciones de fecha en otra.
-    reply_keyboard_monto_fecha = opciones_monto + [["Hoy", "Ayer", "Anteayer"]]
 
     await update.message.reply_text(
         "💲 Por favor, ingrese el monto (número entero sin decimales):\n"
         "O elija una opción rápida:", # Mensaje actualizado
-        reply_markup=ReplyKeyboardMarkup(reply_keyboard_monto_fecha, one_time_keyboard=True, resize_keyboard=True)
+        reply_markup=ReplyKeyboardMarkup(opciones_monto, one_time_keyboard=True, resize_keyboard=True) # Usamos solo opciones_monto
     )
     return MONTO
 
@@ -290,8 +287,9 @@ async def monto(update: Update, context: ContextTypes.DEFAULT_TYPE):
     monto_str_input = update.message.text.strip()
     monto_valor = None
     
-    # Opciones de monto preestablecidas como strings para comparación
+    # Opciones de monto preestablecidas como strings para comparación y para mostrar en caso de error
     predefined_amounts_str = ["10000", "20000", "50000"]
+    opciones_monto_keyboard = [predefined_amounts_str] # Para reutilizar en el teclado de respuesta
 
     try:
         # Primero, intenta si la entrada es uno de los montos preestablecidos
@@ -303,32 +301,27 @@ async def monto(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         # Validar que sea positivo
         if monto_valor <= 0:
-            # Vuelve a mostrar las opciones de monto y fecha
-            opciones_monto = [["10000", "20000", "50000"]]
-            reply_keyboard_monto_fecha = opciones_monto + [["Hoy", "Ayer", "Anteayer"]]
             await update.message.reply_text(
                 "❌ Monto inválido. Debe ser un número entero positivo. Intente de nuevo:",
-                reply_markup=ReplyKeyboardMarkup(reply_keyboard_monto_fecha, one_time_keyboard=True, resize_keyboard=True)
+                reply_markup=ReplyKeyboardMarkup(opciones_monto_keyboard, one_time_keyboard=True, resize_keyboard=True)
             )
             return MONTO # Quédate en este estado
             
         context.user_data.setdefault("temp_data", {})["monto"] = monto_valor
     except ValueError:
         # Esto captura errores si el input no es un número entero (ej. texto, decimales)
-        # Vuelve a mostrar las opciones de monto y fecha
-        opciones_monto = [["10000", "20000", "50000"]]
-        reply_keyboard_monto_fecha = opciones_monto + [["Hoy", "Ayer", "Anteayer"]]
         await update.message.reply_text(
             "❌ Monto inválido. Debe ser un número entero y sin decimales (ej. 100, 500). Intente de nuevo:",
-            reply_markup=ReplyKeyboardMarkup(reply_keyboard_monto_fecha, one_time_keyboard=True, resize_keyboard=True)
+            reply_markup=ReplyKeyboardMarkup(opciones_monto_keyboard, one_time_keyboard=True, resize_keyboard=True)
         )
         return MONTO # Quédate en este estado
 
     # Si el monto es válido (sea preestablecido o manual), procede a pedir la fecha
-    reply_keyboard = [["Hoy", "Ayer", "Anteayer"]]
+    # Aquí es donde se muestran SOLO las opciones de fecha
+    reply_keyboard_fecha = [["Hoy", "Ayer", "Anteayer"]]
     await update.message.reply_text(
         "🗓️ Seleccione o ingrese la fecha del movimiento (YYYY-MM-DD):",
-        reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True, resize_keyboard=True)
+        reply_markup=ReplyKeyboardMarkup(reply_keyboard_fecha, one_time_keyboard=True, resize_keyboard=True)
     )
     return FECHA
 
@@ -352,10 +345,10 @@ async def fecha(update: Update, context: ContextTypes.DEFAULT_TYPE):
             datetime.strptime(fecha_str_input, '%Y-%m-%d')
             fecha_a_guardar = fecha_str_input
         except ValueError:
-            reply_keyboard = [["Hoy", "Ayer", "Anteayer"]]
+            reply_keyboard_fecha = [["Hoy", "Ayer", "Anteayer"]] # Definir de nuevo para el error
             await update.message.reply_text(
                 "❌ Formato de fecha inválido. Por favor, elija una opción o ingrese la fecha en formato YYYY-MM-DD:",
-                reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True, resize_keyboard=True)
+                reply_markup=ReplyKeyboardMarkup(reply_keyboard_fecha, one_time_keyboard=True, resize_keyboard=True)
             )
             return FECHA
 

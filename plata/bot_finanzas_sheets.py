@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 import os
 import json
 
-# ───── CONFIGURACIÓN GENERAL (mantener igual) ─────
+# ───── CONFIGURACIÓN GENERAL ─────
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 SPREADSHEET_ID = os.getenv('GOOGLE_SPREADSHEET_ID')
 GOOGLE_CREDENTIALS_JSON = os.getenv('GOOGLE_CREDENTIALS_FILE_CONTENT')
@@ -25,7 +25,7 @@ if not GOOGLE_CREDENTIALS_JSON:
 SHEET_NAME_PERSONAL = 'Personal-Cris' # Asegúrate que este nombre es correcto en tu Google Sheet
 SHEET_NAME_NEGOCIOS = 'Negocios'      # Asegúrate que este nombre es correcto en tu Google Sheet
 
-# ───── ESTADOS DE CONVERSACIÓN (mantener igual) ─────
+# ───── ESTADOS DE CONVERSACIÓN ─────
 MENU_PRINCIPAL = 0
 TIPO_CUENTA = 1
 TIPO_MOVIMIENTO = 2
@@ -35,11 +35,11 @@ FECHA = 5
 VER_SALDO_SELECCION_CUENTA = 6
 VER_ULTIMOS_MOVIMIENTOS_SELECCION_CUENTA = 7
 
-# ───── VALOR PARA VOLVER AL MENÚ (mantener igual) ─────
+# ───── VALOR PARA VOLVER AL MENÚ ─────
 VOLVER_AL_MENU_OPTION = "0"
-FINALIZAR_SESION_OPTION = "5" # Nuevo número para Finalizar en el menú principal
+FINALIZAR_SESION_OPTION = "5"
 
-# ───── CONEXIÓN A GOOGLE SHEETS (mantener igual) ─────
+# ───── CONEXIÓN A GOOGLE SHEETS ─────
 scopes = ["https://www.googleapis.com/auth/spreadsheets"]
 
 try:
@@ -65,7 +65,7 @@ except Exception as e:
     print(f"Error general al conectar con Google Sheets: {e}")
     exit()
 
-# ───── FUNCIONES AUXILIARES (mantener igual, excepto posibles mejoras si se encuentran errores) ─────
+# ───── FUNCIONES AUXILIARES ─────
 def guardar_en_sheet(sheet_object, data):
     row_data = [
         data.get("movimiento", ""),
@@ -152,35 +152,30 @@ def obtener_ultimos_movimientos(sheet_object, num_movimientos=10):
 # Función auxiliar para escapar texto para MarkdownV2
 def escape_markdown_v2(text: str) -> str:
     """Escapa caracteres especiales de MarkdownV2."""
-    # Lista de caracteres especiales en MarkdownV2 que deben ser escapados.
-    # Esta es una lista exhaustiva de la documentación de Telegram Bot API.
     special_chars = r'_*[]()~`>#+-=|{}.!'
-    # Usamos re.sub para reemplazar cada caracter especial con su versión escapada
     return re.sub(f'([{re.escape(special_chars)}])', r'\\\1', text)
 
-# ───── MANEJADORES DE CONVERSACIÓN (con la función `escape_markdown_v2` aplicada donde sea necesario) ─────
+# ───── MANEJADORES DE CONVERSACIÓN ─────
 async def salir_sesion(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Finaliza la conversación."""
     await update.message.reply_text("👋 Sesión finalizada\\. ¡Hasta pronto\\!", parse_mode='MarkdownV2')
-    # Limpia los datos de usuario al finalizar la sesión
     context.user_data.clear()
     return ConversationHandler.END
 
 async def volver_al_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Regresa al menú principal desde cualquier estado, limpiando datos temporales."""
-    # Limpia los datos temporales del flujo actual
     context.user_data.pop("temp_data", None)
     context.user_data.pop("selected_sheet", None)
     
     await update.message.reply_text("🏠 Volviendo al menú principal\\.", parse_mode='MarkdownV2')
-    return await start(update, context) # Llama a la función start para mostrar el menú
+    return await start(update, context)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Inicia la conversación y muestra el menú principal."""
     reply_keyboard = [
         ["1", "2"],
-        ["3"], # Eliminada la opción "4"
-        [FINALIZAR_SESION_OPTION] # Opción numérica para finalizar
+        ["3"],
+        [FINALIZAR_SESION_OPTION]
     ]
     await update.message.reply_text(
         "👋 Bienvenido\\. ¿Qué desea hacer\\?\n\n"
@@ -201,8 +196,8 @@ async def menu_principal(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if opcion == FINALIZAR_SESION_OPTION:
         return await salir_sesion(update, context)
-    elif opcion == "1": # Registrar movimiento
-        reply_keyboard = [["1", "2"], [VOLVER_AL_MENU_OPTION]] # Añadir opción para volver
+    elif opcion == "1":
+        reply_keyboard = [["1", "2"], [VOLVER_AL_MENU_OPTION]]
         await update.message.reply_text(
             "📝 Por favor, seleccione la cuenta para el registro:\n"
             "1️⃣ Personal\n"
@@ -211,8 +206,8 @@ async def menu_principal(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True, resize_keyboard=True)
         )
         return TIPO_CUENTA
-    elif opcion == "2": # Ver saldo
-        reply_keyboard = [["1", "2"], [VOLVER_AL_MENU_OPTION]] # Añadir opción para volver
+    elif opcion == "2":
+        reply_keyboard = [["1", "2"], [VOLVER_AL_MENU_OPTION]]
         await update.message.reply_text(
             "📊 Por favor, seleccione la cuenta para consultar el saldo:\n"
             "1️⃣ Personal\n"
@@ -221,8 +216,8 @@ async def menu_principal(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True, resize_keyboard=True)
         )
         return VER_SALDO_SELECCION_CUENTA
-    elif opcion == "3": # Ver últimos movimientos
-        reply_keyboard = [["1", "2"], [VOLVER_AL_MENU_OPTION]] # Añadir opción para volver
+    elif opcion == "3":
+        reply_keyboard = [["1", "2"], [VOLVER_AL_MENU_OPTION]]
         await update.message.reply_text(
             "🔎 Por favor, seleccione la cuenta para ver el historial:\n"
             "1️⃣ Personal\n"
@@ -231,7 +226,6 @@ async def menu_principal(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True, resize_keyboard=True)
         )
         return VER_ULTIMOS_MOVIMIENTOS_SELECCION_CUENTA
-    # Eliminada la opción 4
     else:
         await update.message.reply_text("❌ Opción inválida\\. Por favor, elija una de las opciones numéricas\\.", parse_mode='MarkdownV2')
         return MENU_PRINCIPAL
@@ -255,11 +249,11 @@ async def tipo_cuenta(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data["selected_sheet"] = selected_sheet_obj
     context.user_data.setdefault("temp_data", {})["account_name"] = account_name
 
-    reply_keyboard = [["1", "2"], [VOLVER_AL_MENU_OPTION]] # Añadir opción para volver
+    reply_keyboard = [["1", "2"], [VOLVER_AL_MENU_OPTION]]
     await update.message.reply_text(
         "➡️ Indique el tipo de movimiento:\n"
         "1️⃣ Crédito \\(\\+\\)\n"
-        "2️⃣ Débito \\(\\-\\)\n"  # Corregido de \\(-\\\) a \\(-\\)
+        "2️⃣ Débito \\(\\-\\)\n"
         f"{VOLVER_AL_MENU_OPTION}️⃣ Volver al menú",
         reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True, resize_keyboard=True),
         parse_mode='MarkdownV2'
@@ -283,13 +277,28 @@ async def tipo_movimiento(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     return DESCRIPCION
 
+async def descripcion(update: Update, context: ContextTypes.DEFAULT_TYPE):
+        
+    context.user_data.setdefault("temp_data", {})["descripcion"] = update.message.text
+    
+    opciones_monto = [["10000", "20000", "50000"], [VOLVER_AL_MENU_OPTION]]
+
+    await update.message.reply_text(
+        "💲 Por favor, ingrese el monto \\(número entero sin decimales\\):\n"
+        "O elija una opción rápida:\n"
+        f"{VOLVER_AL_MENU_OPTION}️⃣ Volver al menú",
+        reply_markup=ReplyKeyboardMarkup(opciones_monto, one_time_keyboard=True, resize_keyboard=True),
+        parse_mode='MarkdownV2'
+    )
+    return MONTO
+
 async def monto(update: Update, context: ContextTypes.DEFAULT_TYPE):
     monto_str_input = update.message.text.strip()
         
     monto_valor = None
     
     predefined_amounts_str = ["10000", "20000", "50000"]
-    opciones_monto_keyboard = [predefined_amounts_str, [VOLVER_AL_MENU_OPTION]] # Para reutilizar en el teclado de respuesta
+    opciones_monto_keyboard = [predefined_amounts_str, [VOLVER_AL_MENU_OPTION]]
 
     try:
         if monto_str_input in predefined_amounts_str:
@@ -322,7 +331,7 @@ async def monto(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return MONTO
 
-    reply_keyboard_fecha = [["Hoy", "Ayer", "Anteayer"], [VOLVER_AL_MENU_OPTION]] # Añadir opción para volver
+    reply_keyboard_fecha = [["Hoy", "Ayer", "Anteayer"], [VOLVER_AL_MENU_OPTION]]
     await update.message.reply_text(
         "🗓️ Seleccione o ingrese la fecha del movimiento \\(YYYY\\-MM\\-DD\\):\n"
         f"{VOLVER_AL_MENU_OPTION}️⃣ Volver al menú",
@@ -371,11 +380,10 @@ async def fecha(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     saldo_actual = calcular_saldo_desde_movimientos(selected_sheet_obj)
     
-    # Limpiar datos temporales después de guardar
     context.user_data.pop("temp_data", None)
     context.user_data.pop("selected_sheet", None)
 
-    reply_keyboard = [["1", "2"], ["3"], [FINALIZAR_SESION_OPTION]] # Eliminada la opción "4"
+    reply_keyboard = [["1", "2"], ["3"], [FINALIZAR_SESION_OPTION]]
     await update.message.reply_text(
         f"✅ Movimiento registrado exitosamente en \\'{escape_markdown_v2(account_name)}\\'\\.\n"
         f"💰 Su saldo actual en \\'{escape_markdown_v2(account_name)}\\' es: \\${saldo_actual:,.0f}\n\n"
@@ -407,7 +415,6 @@ async def ver_saldo_seleccion_cuenta(update: Update, context: ContextTypes.DEFAU
 
     if selected_sheet_for_saldo:
         saldo = calcular_saldo_desde_movimientos(selected_sheet_for_saldo)
-        # Escapar el nombre de la cuenta y el símbolo de dólar para MarkdownV2
         await update.message.reply_text(f"💰 Su saldo actual en \\'{escape_markdown_v2(account_name)}\\' es: \\${saldo:,.0f}", parse_mode='MarkdownV2')
     else:
         await update.message.reply_text("🚫 Hubo un error al seleccionar la cuenta\\. Por favor, intente de nuevo\\.", parse_mode='MarkdownV2')
@@ -438,15 +445,11 @@ async def ver_ultimos_movimientos_seleccion_cuenta(update: Update, context: Cont
         ultimos_movimientos_data = obtener_ultimos_movimientos(selected_sheet_for_moves, num_movimientos=10)
         
         if ultimos_movimientos_data:
-            # Definir los encabezados de las columnas
             headers = ["Fecha", "Tipo", "Monto", "Descripción"]
             
-            # Calcular los anchos máximos para cada columna
-            # Incluir el ancho del encabezado en el cálculo inicial
             max_widths = [len(h) for h in headers] 
             
             for row_data in ultimos_movimientos_data:
-                # Usar los valores originales para el cálculo de ancho antes de escapar para la impresión.
                 fecha_raw = str(row_data[0]) if len(row_data) > 0 else ""
                 tipo_raw = str(row_data[1]) if len(row_data) > 1 else ""
                 monto_raw = "$" + str(row_data[2]) if len(row_data) > 2 else "" 
@@ -454,13 +457,9 @@ async def ver_ultimos_movimientos_seleccion_cuenta(update: Update, context: Cont
 
                 current_row_lengths = [len(fecha_raw), len(tipo_raw), len(monto_raw), len(descripcion_raw)]
                 
-                # Actualizar los anchos máximos
                 for i in range(len(max_widths)):
                     max_widths[i] = max(max_widths[i], current_row_lengths[i])
 
-            # Construir el encabezado formateado
-            # NO ESCAPAR LOS ENCABEZADOS AQUI. Los bloques de código `pre` manejan los caracteres especiales.
-            # Escapar solo los que van fuera de ```
             formatted_header = (
                 f"{headers[0].ljust(max_widths[0])}  "
                 f"{headers[1].ljust(max_widths[1])}  "
@@ -468,8 +467,6 @@ async def ver_ultimos_movimientos_seleccion_cuenta(update: Update, context: Cont
                 f"{headers[3].ljust(max_widths[3])}"
             )
             
-            # Construir la línea separadora
-            # NO ESCAPAR LOS GUIONES. Los bloques de código `pre` manejan los caracteres especiales.
             separator_line = (
                 f"{'-' * max_widths[0]}  "
                 f"{'-' * max_widths[1]}  "
@@ -477,17 +474,13 @@ async def ver_ultimos_movimientos_seleccion_cuenta(update: Update, context: Cont
                 f"{'-' * max_widths[3]}"
             )
             
-            # Construir las filas de datos formateadas
             data_rows_formatted = []
             for row_data in ultimos_movimientos_data:
-                # No escapar los datos individuales para la alineación dentro del bloque 'pre'.
-                # El bloque 'pre' debería manejar los caracteres especiales por sí mismo.
                 fecha = str(row_data[0]) if len(row_data) > 0 else ""
                 tipo = str(row_data[1]) if len(row_data) > 1 else ""
-                monto = "$" + str(row_data[2]) if len(row_data) > 2 else "" # Añadir el símbolo $ aquí
+                monto = "$" + str(row_data[2]) if len(row_data) > 2 else ""
                 descripcion = str(row_data[3]) if len(row_data) > 3 else ""
                 
-                # Formatear cada campo con el ancho máximo calculado, alineado a la izquierda
                 formatted_row = (
                     f"{fecha.ljust(max_widths[0])}  "
                     f"{tipo.ljust(max_widths[1])}  "
@@ -496,15 +489,13 @@ async def ver_ultimos_movimientos_seleccion_cuenta(update: Update, context: Cont
                 )
                 data_rows_formatted.append(formatted_row)
 
-            # Unir todas las partes para formar el texto completo de la tabla
             moves_table_text = "\n".join([formatted_header, separator_line] + data_rows_formatted)
 
-            # Escapar el nombre de la cuenta para MarkdownV2 que va fuera del bloque de código
             escaped_account_name = escape_markdown_v2(account_name)
 
             await update.message.reply_text(
                 f"📄 \\*\\*Historial de Movimientos Recientes en \\'{escaped_account_name}\\'\\:\\*\\*\n\n"
-                f"```\n{moves_table_text}\n```", # El bloque de código `pre` maneja los escapes internos
+                f"```\n{moves_table_text}\n```",
                 parse_mode='MarkdownV2' 
             )
         else:
@@ -514,7 +505,7 @@ async def ver_ultimos_movimientos_seleccion_cuenta(update: Update, context: Cont
     
     return await start(update, context)
 
-# ───── INICIAR EL BOT (mantener igual) ─────
+# ───── INICIAR EL BOT ─────
 def main():
     application = ApplicationBuilder().token(TELEGRAM_BOT_TOKEN).build()
 
@@ -537,7 +528,7 @@ def main():
             ],
             DESCRIPCION: [
                 MessageHandler(filters.Regex(f"^{re.escape(VOLVER_AL_MENU_OPTION)}$") & ~filters.COMMAND, volver_al_menu),
-                MessageHandler(filters.TEXT & ~filters.COMMAND, descripcion),
+                MessageHandler(filters.TEXT & ~filters.COMMAND, descripcion), # Se referencia la función 'descripcion' aquí
             ],
             MONTO: [
                 MessageHandler(filters.Regex(f"^{re.escape(VOLVER_AL_MENU_OPTION)}$") & ~filters.COMMAND, volver_al_menu),

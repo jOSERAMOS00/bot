@@ -179,7 +179,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Inicia la conversación y muestra el menú principal."""
     reply_keyboard = [
         ["1", "2"],
-        ["3", "4"],
+        ["3"], # Eliminada la opción "4"
         [FINALIZAR_SESION_OPTION] # Opción numérica para finalizar
     ]
     await update.message.reply_text(
@@ -187,7 +187,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "1️⃣ Registrar un nuevo movimiento\n"
         "2️⃣ Consultar saldo\n"
         "3️⃣ Ver historial de movimientos\n"
-        "4️⃣ \\(Sin uso por ahora\\)\n"
         f"{FINALIZAR_SESION_OPTION}️⃣ Finalizar sesión",
         reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True, resize_keyboard=True),
         parse_mode='MarkdownV2'
@@ -232,9 +231,7 @@ async def menu_principal(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True, resize_keyboard=True)
         )
         return VER_ULTIMOS_MOVIMIENTOS_SELECCION_CUENTA
-    elif opcion == "4": # Opción 4, sin uso por ahora
-        await update.message.reply_text("Esta opción no está implementada todavía\\. Por favor, elija otra\\.", parse_mode='MarkdownV2')
-        return MENU_PRINCIPAL
+    # Eliminada la opción 4
     else:
         await update.message.reply_text("❌ Opción inválida\\. Por favor, elija una de las opciones numéricas\\.", parse_mode='MarkdownV2')
         return MENU_PRINCIPAL
@@ -261,8 +258,8 @@ async def tipo_cuenta(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_keyboard = [["1", "2"], [VOLVER_AL_MENU_OPTION]] # Añadir opción para volver
     await update.message.reply_text(
         "➡️ Indique el tipo de movimiento:\n"
-        "1️⃣ Crédito \\(\\+\\)\n" # Aquí la línea original.
-        "2️⃣ Débito \\(\\-\\)\n"  # CAMBIO: Corregido de \\(-\\\) a \\(-\\)
+        "1️⃣ Crédito \\(\\+\\)\n"
+        "2️⃣ Débito \\(\\-\\)\n"  # Corregido de \\(-\\\) a \\(-\\)
         f"{VOLVER_AL_MENU_OPTION}️⃣ Volver al menú",
         reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True, resize_keyboard=True),
         parse_mode='MarkdownV2'
@@ -285,21 +282,6 @@ async def tipo_movimiento(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode='MarkdownV2'
     )
     return DESCRIPCION
-
-async def descripcion(update: Update, context: ContextTypes.DEFAULT_TYPE):
-        
-    context.user_data.setdefault("temp_data", {})["descripcion"] = update.message.text
-    
-    opciones_monto = [["10000", "20000", "50000"], [VOLVER_AL_MENU_OPTION]] # Añadir opción para volver
-
-    await update.message.reply_text(
-        "💲 Por favor, ingrese el monto \\(número entero sin decimales\\):\n"
-        "O elija una opción rápida:\n"
-        f"{VOLVER_AL_MENU_OPTION}️⃣ Volver al menú",
-        reply_markup=ReplyKeyboardMarkup(opciones_monto, one_time_keyboard=True, resize_keyboard=True),
-        parse_mode='MarkdownV2'
-    )
-    return MONTO
 
 async def monto(update: Update, context: ContextTypes.DEFAULT_TYPE):
     monto_str_input = update.message.text.strip()
@@ -393,7 +375,7 @@ async def fecha(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data.pop("temp_data", None)
     context.user_data.pop("selected_sheet", None)
 
-    reply_keyboard = [["1", "2"], ["3", "4"], [FINALIZAR_SESION_OPTION]]
+    reply_keyboard = [["1", "2"], ["3"], [FINALIZAR_SESION_OPTION]] # Eliminada la opción "4"
     await update.message.reply_text(
         f"✅ Movimiento registrado exitosamente en \\'{escape_markdown_v2(account_name)}\\'\\.\n"
         f"💰 Su saldo actual en \\'{escape_markdown_v2(account_name)}\\' es: \\${saldo_actual:,.0f}\n\n"
@@ -401,7 +383,6 @@ async def fecha(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "1️⃣ Registrar un nuevo movimiento\n"
         "2️⃣ Consultar saldo\n"
         "3️⃣ Ver historial de movimientos\n"
-        "4️⃣ \\(Sin uso por ahora\\)\n"
         f"{FINALIZAR_SESION_OPTION}️⃣ Finalizar sesión",
         reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True, resize_keyboard=True),
         parse_mode='MarkdownV2'

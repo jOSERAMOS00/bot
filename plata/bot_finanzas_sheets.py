@@ -261,8 +261,8 @@ async def tipo_cuenta(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_keyboard = [["1", "2"], [VOLVER_AL_MENU_OPTION]] # Añadir opción para volver
     await update.message.reply_text(
         "➡️ Indique el tipo de movimiento:\n"
-        "1️⃣ Crédito \\(\\+\\)\n"
-        "2️⃣ Débito \\(\\-\\\)\n"
+        "1️⃣ Crédito \\(\\+\\)\n" # Aquí la línea original.
+        "2️⃣ Débito \\(\\-\\)\n"  # CAMBIO: Corregido de \\(-\\\) a \\(-\\)
         f"{VOLVER_AL_MENU_OPTION}️⃣ Volver al menú",
         reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True, resize_keyboard=True),
         parse_mode='MarkdownV2'
@@ -465,46 +465,46 @@ async def ver_ultimos_movimientos_seleccion_cuenta(update: Update, context: Cont
             max_widths = [len(h) for h in headers] 
             
             for row_data in ultimos_movimientos_data:
-                fecha = str(row_data[0]) if len(row_data) > 0 else ""
-                tipo = str(row_data[1]) if len(row_data) > 1 else ""
-                monto = "$" + str(row_data[2]) if len(row_data) > 2 else "" 
-                descripcion = str(row_data[3]) if len(row_data) > 3 else ""
+                # Usar los valores originales para el cálculo de ancho antes de escapar para la impresión.
+                fecha_raw = str(row_data[0]) if len(row_data) > 0 else ""
+                tipo_raw = str(row_data[1]) if len(row_data) > 1 else ""
+                monto_raw = "$" + str(row_data[2]) if len(row_data) > 2 else "" 
+                descripcion_raw = str(row_data[3]) if len(row_data) > 3 else ""
 
-                current_row_lengths = [len(fecha), len(tipo), len(monto), len(descripcion)]
+                current_row_lengths = [len(fecha_raw), len(tipo_raw), len(monto_raw), len(descripcion_raw)]
                 
                 # Actualizar los anchos máximos
                 for i in range(len(max_widths)):
                     max_widths[i] = max(max_widths[i], current_row_lengths[i])
 
             # Construir el encabezado formateado
-            # Escapar cada encabezado individualmente para MarkdownV2 ANTES de justificarlo
-            escaped_headers = [escape_markdown_v2(h) for h in headers]
+            # NO ESCAPAR LOS ENCABEZADOS AQUI. Los bloques de código `pre` manejan los caracteres especiales.
+            # Escapar solo los que van fuera de ```
             formatted_header = (
-                f"{escaped_headers[0].ljust(max_widths[0])}  "
-                f"{escaped_headers[1].ljust(max_widths[1])}  "
-                f"{escaped_headers[2].ljust(max_widths[2])}  "
-                f"{escaped_headers[3].ljust(max_widths[3])}"
+                f"{headers[0].ljust(max_widths[0])}  "
+                f"{headers[1].ljust(max_widths[1])}  "
+                f"{headers[2].ljust(max_widths[2])}  "
+                f"{headers[3].ljust(max_widths[3])}"
             )
             
             # Construir la línea separadora
-            # Escapar el guion de la línea separadora si se considera necesario, aunque dentro de ``` no debería serlo.
-            # Sin embargo, dado el error, vamos a escapar explícitamente el guion repetido.
-            escaped_dash_segment = escape_markdown_v2('-')
+            # NO ESCAPAR LOS GUIONES. Los bloques de código `pre` manejan los caracteres especiales.
             separator_line = (
-                f"{escaped_dash_segment * max_widths[0]}  "
-                f"{escaped_dash_segment * max_widths[1]}  "
-                f"{escaped_dash_segment * max_widths[2]}  "
-                f"{escaped_dash_segment * max_widths[3]}"
+                f"{'-' * max_widths[0]}  "
+                f"{'-' * max_widths[1]}  "
+                f"{'-' * max_widths[2]}  "
+                f"{'-' * max_widths[3]}"
             )
             
             # Construir las filas de datos formateadas
             data_rows_formatted = []
             for row_data in ultimos_movimientos_data:
-                # Escapar cada pieza de dato individualmente antes de darle formato y justificarla
-                fecha = escape_markdown_v2(str(row_data[0])) if len(row_data) > 0 else ""
-                tipo = escape_markdown_v2(str(row_data[1])) if len(row_data) > 1 else ""
-                monto = escape_markdown_v2("$" + str(row_data[2])) if len(row_data) > 2 else "" # Añadir el símbolo $ aquí y escapar
-                descripcion = escape_markdown_v2(str(row_data[3])) if len(row_data) > 3 else ""
+                # No escapar los datos individuales para la alineación dentro del bloque 'pre'.
+                # El bloque 'pre' debería manejar los caracteres especiales por sí mismo.
+                fecha = str(row_data[0]) if len(row_data) > 0 else ""
+                tipo = str(row_data[1]) if len(row_data) > 1 else ""
+                monto = "$" + str(row_data[2]) if len(row_data) > 2 else "" # Añadir el símbolo $ aquí
+                descripcion = str(row_data[3]) if len(row_data) > 3 else ""
                 
                 # Formatear cada campo con el ancho máximo calculado, alineado a la izquierda
                 formatted_row = (
@@ -518,12 +518,12 @@ async def ver_ultimos_movimientos_seleccion_cuenta(update: Update, context: Cont
             # Unir todas las partes para formar el texto completo de la tabla
             moves_table_text = "\n".join([formatted_header, separator_line] + data_rows_formatted)
 
-            # Escapar el nombre de la cuenta para MarkdownV2
+            # Escapar el nombre de la cuenta para MarkdownV2 que va fuera del bloque de código
             escaped_account_name = escape_markdown_v2(account_name)
 
             await update.message.reply_text(
                 f"📄 \\*\\*Historial de Movimientos Recientes en \\'{escaped_account_name}\\'\\:\\*\\*\n\n"
-                f"```\n{moves_table_text}\n```", # El bloque de código `pre` suele manejar los escapes internos
+                f"```\n{moves_table_text}\n```", # El bloque de código `pre` maneja los escapes internos
                 parse_mode='MarkdownV2' 
             )
         else:

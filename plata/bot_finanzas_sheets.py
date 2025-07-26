@@ -26,7 +26,7 @@ if not GOOGLE_CREDENTIALS_JSON:
     raise ValueError("La variable de entorno 'GOOGLE_CREDENTIALS_FILE_CONTENT' no está configurada.")
 
 # Define los nombres exactos de sus dos hojas/pestañas en Google Sheets
-SHEET_NAME_PERSONAL = 'Personal'
+SHEET_NAME_PERSONAL = 'Personal-Cris'
 SHEET_NAME_NEGOCIOS = 'Negocios'
 
 # ───── MAPEO DE COLUMNAS PARA REGISTROS EN CADA HOJA ─────

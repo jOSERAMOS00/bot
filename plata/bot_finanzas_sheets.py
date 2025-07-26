@@ -536,31 +536,38 @@ def main():
             ],
             TIPO_CUENTA: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, tipo_cuenta),
-                MessageHandler(filters.TEXT(VOLVER_AL_MENU_OPTION), volver_al_menu) # CORRECCIÓN AQUÍ
+                # Usar filters.Regex para coincidencia exacta de texto
+                MessageHandler(filters.Regex(f"^{re.escape(VOLVER_AL_MENU_OPTION)}$") & ~filters.COMMAND, volver_al_menu)
             ],
             TIPO_MOVIMIENTO: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, tipo_movimiento),
-                MessageHandler(filters.TEXT(VOLVER_AL_MENU_OPTION), volver_al_menu) # CORRECCIÓN AQUÍ
+                # Usar filters.Regex para coincidencia exacta de texto
+                MessageHandler(filters.Regex(f"^{re.escape(VOLVER_AL_MENU_OPTION)}$") & ~filters.COMMAND, volver_al_menu)
             ],
             DESCRIPCION: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, descripcion),
-                MessageHandler(filters.TEXT(VOLVER_AL_MENU_OPTION), volver_al_menu) # CORRECCIÓN AQUÍ
+                # Usar filters.Regex para coincidencia exacta de texto
+                MessageHandler(filters.Regex(f"^{re.escape(VOLVER_AL_MENU_OPTION)}$") & ~filters.COMMAND, volver_al_menu)
             ],
             MONTO: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, monto),
-                MessageHandler(filters.TEXT(VOLVER_AL_MENU_OPTION), volver_al_menu) # CORRECCIÓN AQUÍ
+                # Usar filters.Regex para coincidencia exacta de texto
+                MessageHandler(filters.Regex(f"^{re.escape(VOLVER_AL_MENU_OPTION)}$") & ~filters.COMMAND, volver_al_menu)
             ],
             FECHA: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, fecha),
-                MessageHandler(filters.TEXT(VOLVER_AL_MENU_OPTION), volver_al_menu) # CORRECCIÓN AQUÍ
+                # Usar filters.Regex para coincidencia exacta de texto
+                MessageHandler(filters.Regex(f"^{re.escape(VOLVER_AL_MENU_OPTION)}$") & ~filters.COMMAND, volver_al_menu)
             ],
             VER_SALDO_SELECCION_CUENTA: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, ver_saldo_seleccion_cuenta),
-                MessageHandler(filters.TEXT(VOLVER_AL_MENU_OPTION), volver_al_menu) # CORRECCIÓN AQUÍ
+                # Usar filters.Regex para coincidencia exacta de texto
+                MessageHandler(filters.Regex(f"^{re.escape(VOLVER_AL_MENU_OPTION)}$") & ~filters.COMMAND, volver_al_menu)
             ],
             VER_ULTIMOS_MOVIMIENTOS_SELECCION_CUENTA: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, ver_ultimos_movimientos_seleccion_cuenta),
-                MessageHandler(filters.TEXT(VOLVER_AL_MENU_OPTION), volver_al_menu) # CORRECCIÓN AQUÍ
+                # Usar filters.Regex para coincidencia exacta de texto
+                MessageHandler(filters.Regex(f"^{re.escape(VOLVER_AL_MENU_OPTION)}$") & ~filters.COMMAND, volver_al_menu)
             ],
         },
         # Cualquier mensaje no manejado en un estado específico o el comando /start

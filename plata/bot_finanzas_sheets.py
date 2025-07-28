@@ -200,7 +200,7 @@ async def menu_principal(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_keyboard = [["1", "2"], [VOLVER_AL_MENU_OPTION]]
         await update.message.reply_text(
             "📝 Por favor, seleccione la cuenta para el registro:\n"
-            "1️⃣ Personal\n"
+            "1️⃣ Personal- Cris \n"
             "2️⃣ Negocio\n"
             f"{VOLVER_AL_MENU_OPTION}️⃣ Volver al menú",
             reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True, resize_keyboard=True)
@@ -210,7 +210,7 @@ async def menu_principal(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_keyboard = [["1", "2"], [VOLVER_AL_MENU_OPTION]]
         await update.message.reply_text(
             "📊 Por favor, seleccione la cuenta para consultar el saldo:\n"
-            "1️⃣ Personal\n"
+            "1️⃣ Personal-Cris\n"
             "2️⃣ Negocio\n"
             f"{VOLVER_AL_MENU_OPTION}️⃣ Volver al menú",
             reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True, resize_keyboard=True)
@@ -384,17 +384,18 @@ async def fecha(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data.pop("selected_sheet", None)
 
     reply_keyboard = [["1", "2"], ["3"], [FINALIZAR_SESION_OPTION]]
-    await update.message.reply_text(
-        f"✅ Movimiento registrado exitosamente en \\'{escape_markdown_v2(account_name)}\\'\\.\n"
-        f"💰 Su saldo actual en \\'{escape_markdown_v2(account_name)}\\' es: \\${saldo_actual:,.0f}\n\n\n\n"
-        f"¿Qué desea hacer ahora\\?\n"
-        "1️⃣ Registrar un nuevo movimiento\n"
-        "2️⃣ Consultar saldo\n"
-        "3️⃣ Ver historial de movimientos\n"
-        f"{FINALIZAR_SESION_OPTION}️⃣ Finalizar sesión",
-        reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True, resize_keyboard=True),
-        parse_mode='MarkdownV2'
-    )
+await update.message.reply_text(
+    f"✅ Movimiento registrado exitosamente en *{escape_markdown_v2(account_name)}*.\n"
+    f"💰 Su saldo actual en *{escape_markdown_v2(account_name)}* es: \\${saldo_actual:,.0f}\n\n\n\n"
+    f"¿Qué desea hacer ahora?\n"
+    "1️⃣ Registrar un nuevo movimiento\n"
+    "2️⃣ Consultar saldo\n"
+    "3️⃣ Ver historial de movimientos\n"
+    f"{FINALIZAR_SESION_OPTION}️⃣ Finalizar sesión",
+    reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True, resize_keyboard=True),
+    parse_mode='MarkdownV2'
+)
+
     return MENU_PRINCIPAL
 
 async def ver_saldo_seleccion_cuenta(update: Update, context: ContextTypes.DEFAULT_TYPE):

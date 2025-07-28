@@ -416,7 +416,10 @@ async def ver_saldo_seleccion_cuenta(update: Update, context: ContextTypes.DEFAU
 
     if selected_sheet_for_saldo:
         saldo = calcular_saldo_desde_movimientos(selected_sheet_for_saldo)
-        await update.message.reply_text(f"💰 Su saldo actual en \\'{escape_markdown_v2(account_name)}\\' es: \\${saldo:,.0f}", parse_mode='MarkdownV2')
+       await update.message.reply_text(f"💰 Su saldo actual en *{escape_markdown_v2(account_name)}* es: \\${saldo:,.0f}",
+    parse_mode='MarkdownV2'
+)
+
     else:
         await update.message.reply_text("🚫 Hubo un error al seleccionar la cuenta\\. Por favor, intente de nuevo\\.", parse_mode='MarkdownV2')
     

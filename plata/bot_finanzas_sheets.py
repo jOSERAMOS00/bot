@@ -220,7 +220,7 @@ async def menu_principal(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_keyboard = [["1", "2"], [VOLVER_AL_MENU_OPTION]]
         await update.message.reply_text(
             "🔎 Por favor, seleccione la cuenta para ver el historial:\n"
-            "1️⃣ Personal\n"
+            "1️⃣ Personal-Cris\n"
             "2️⃣ Negocio\n"
             f"{VOLVER_AL_MENU_OPTION}️⃣ Volver al menú",
             reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True, resize_keyboard=True)
@@ -386,7 +386,7 @@ async def fecha(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_keyboard = [["1", "2"], ["3"], [FINALIZAR_SESION_OPTION]]
     await update.message.reply_text(
         f"✅ Movimiento registrado exitosamente en \\'{escape_markdown_v2(account_name)}\\'\\.\n"
-        f"💰 Su saldo actual en \\'{escape_markdown_v2(account_name)}\\' es: \\${saldo_actual:,.0f}\n\n"
+        f"💰 Su saldo actual en \\'{escape_markdown_v2(account_name)}\\' es: \\${saldo_actual:,.0f}\n\n\n\n"
         f"¿Qué desea hacer ahora\\?\n"
         "1️⃣ Registrar un nuevo movimiento\n"
         "2️⃣ Consultar saldo\n"

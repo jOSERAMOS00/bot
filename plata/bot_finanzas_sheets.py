@@ -70,7 +70,7 @@ try:
     sheet_negocios = spreadsheet.worksheet(SHEET_NAME_NEGOCIOS)
     logger.info(f"Conexión exitosa a las hojas: '{SHEET_NAME_PERSONAL}' y '{SHEET_NAME_NEGOCIOS}'")
 except gspread.exceptions.WorksheetNotFound as e:
-    logger.error(f"Error: Una de las hojas no se encontró. Asegúrese que los nombres '{SHEET_NAME_PERSONAL}' y '{SHEET_NAME_NEGOCIOS}' sean exactos. Detalle: {e}")
+    logger.error(f"Error: Una de las hojas no se encontró. Asegúrese que los nombres '{SHE_NAME_PERSONAL}' y '{SHEET_NAME_NEGOCIOS}' sean exactos. Detalle: {e}")
     exit()
 except Exception as e:
     logger.error(f"Error general al conectar con Google Sheets: {e}")
@@ -319,11 +319,12 @@ async def monto(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     try:
         # Se limpia el string de entrada para asegurar una correcta conversión
+        # Elimina cualquier caracter que no sea un dígito o un punto (para flotantes temporales)
         cleaned_monto_str = re.sub(r'[^\d\.]', '', monto_str_input)
         
-        # Validar que el monto no sea vacío
+        # Validar que el monto no sea vacío después de la limpieza
         if not cleaned_monto_str:
-            raise ValueError
+            raise ValueError("El monto no puede estar vacío.")
         
         monto_valor = int(float(cleaned_monto_str))
 
@@ -338,7 +339,8 @@ async def monto(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return MONTO
             
         context.user_data.setdefault("temp_data", {})["monto"] = monto_valor
-    except ValueError:
+    except ValueError as e:
+        logger.error(f"Error al procesar monto: {e} - Input: '{monto_str_input}'")
         await update.message.reply_text(
             "❌ Monto inválido\\. Por favor, ingrese un número entero positivo sin decimales \\(ej\\. 100, 500, \\$2345, 2,345\\)\\. Intente de nuevo:\n"
             f"O escriba '{VOLVER_AL_MENU_OPTION}' para volver al menú\\.",
@@ -400,9 +402,15 @@ async def fecha(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data.pop("selected_sheet", None)
 
     reply_keyboard = [["1", "2"], ["3"], [FINALIZAR_SESION_OPTION]]
+    
+    # --- CAMBIO AQUÍ: Escapar el saldo formateado para MarkdownV2 ---
+    formatted_saldo_text = f"{saldo_actual:,.0f}"
+    escaped_saldo_text = escape_markdown_v2(formatted_saldo_text)
+    # -----------------------------------------------------------------
+
     await update.message.reply_text(
         f"✅ Movimiento registrado exitosamente en \\'{escape_markdown_v2(account_name)}\\'\\.\n"
-        f"💰 Su saldo actual en \\'{escape_markdown_v2(account_name)}\\' es: \\${saldo_actual:,.0f}\n\n"
+        f"💰 Su saldo actual en \\'{escape_markdown_v2(account_name)}\\' es: \\${escaped_saldo_text}\n\n" # Usar escaped_saldo_text
         f"¿Qué desea hacer ahora\\?\n"
         "1️⃣ Registrar un nuevo movimiento\n"
         "2️⃣ Consultar saldo\n"
@@ -415,7 +423,7 @@ async def fecha(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def ver_saldo_seleccion_cuenta(update: Update, context: ContextTypes.DEFAULT_TYPE):
     opcion = update.message.text.strip()
-    
+        
     selected_sheet_for_saldo = None
     account_name = ""
 
@@ -431,8 +439,16 @@ async def ver_saldo_seleccion_cuenta(update: Update, context: ContextTypes.DEFAU
 
     if selected_sheet_for_saldo:
         saldo = calcular_saldo_desde_movimientos(selected_sheet_for_saldo)
-        # Formateo del saldo para que se muestre correctamente, incluso si es negativo
-        await update.message.reply_text(f"💰 Su saldo actual en \\'{escape_markdown_v2(account_name)}\\' es: \\${saldo:,.0f}", parse_mode='MarkdownV2')
+        
+        # --- CAMBIO AQUÍ: Escapar el saldo formateado para MarkdownV2 ---
+        formatted_saldo_text = f"{saldo:,.0f}"
+        escaped_saldo_text = escape_markdown_v2(formatted_saldo_text)
+        # -----------------------------------------------------------------
+
+        await update.message.reply_text(
+            f"💰 Su saldo actual en \\'{escape_markdown_v2(account_name)}\\' es: \\${escaped_saldo_text}", # Usar escaped_saldo_text
+            parse_mode='MarkdownV2'
+        )
     else:
         await update.message.reply_text("🚫 Hubo un error al seleccionar la cuenta\\. Por favor, intente de nuevo\\.", parse_mode='MarkdownV2')
     

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import re
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import (
@@ -9,8 +10,17 @@ from google.oauth2.service_account import Credentials
 from datetime import datetime, timedelta
 import os
 import json
+import logging
 
 # ───── CONFIGURACIÓN GENERAL ─────
+# Configuración de logs para un mejor seguimiento de errores
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
+logger = logging.getLogger(__name__)
+
+# Asegúrate de que las variables de entorno están configuradas
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 SPREADSHEET_ID = os.getenv('GOOGLE_SPREADSHEET_ID')
 GOOGLE_CREDENTIALS_JSON = os.getenv('GOOGLE_CREDENTIALS_FILE_CONTENT')
@@ -22,8 +32,9 @@ if not SPREADSHEET_ID:
 if not GOOGLE_CREDENTIALS_JSON:
     raise ValueError("La variable de entorno 'GOOGLE_CREDENTIALS_FILE_CONTENT' no está configurada.")
 
-SHEET_NAME_PERSONAL = 'Personal-Cris' # Asegúrate que este nombre es correcto en tu Google Sheet
-SHEET_NAME_NEGOCIOS = 'Negocios'      # Asegúrate que este nombre es correcto en tu Google Sheet
+# Nombres de las hojas en Google Sheets
+SHEET_NAME_PERSONAL = 'Personal-Cris' 
+SHEET_NAME_NEGOCIOS = 'Negocios'      
 
 # ───── ESTADOS DE CONVERSACIÓN ─────
 MENU_PRINCIPAL = 0
@@ -47,26 +58,27 @@ try:
     credentials = Credentials.from_service_account_info(credentials_info, scopes=scopes)
     client = gspread.authorize(credentials)
 except json.JSONDecodeError as e:
-    print(f"Error al decodificar las credenciales JSON: {e}")
+    logger.error(f"Error al decodificar las credenciales JSON: {e}")
     exit()
 except Exception as e:
-    print(f"Error al autenticar con Google Sheets: {e}")
+    logger.error(f"Error al autenticar con Google Sheets: {e}")
     exit()
 
 try:
     spreadsheet = client.open_by_key(SPREADSHEET_ID)
     sheet_personal = spreadsheet.worksheet(SHEET_NAME_PERSONAL)
     sheet_negocios = spreadsheet.worksheet(SHEET_NAME_NEGOCIOS)
-    print(f"Conexión exitosa a las hojas: '{SHEET_NAME_PERSONAL}' y '{SHEET_NAME_NEGOCIOS}'")
+    logger.info(f"Conexión exitosa a las hojas: '{SHEET_NAME_PERSONAL}' y '{SHEET_NAME_NEGOCIOS}'")
 except gspread.exceptions.WorksheetNotFound as e:
-    print(f"Error: Una de las hojas no se encontró. Asegúrese que los nombres '{SHEET_NAME_PERSONAL}' y '{SHEET_NAME_NEGOCIOS}' sean exactos. Detalle: {e}")
+    logger.error(f"Error: Una de las hojas no se encontró. Asegúrese que los nombres '{SHEET_NAME_PERSONAL}' y '{SHEET_NAME_NEGOCIOS}' sean exactos. Detalle: {e}")
     exit()
 except Exception as e:
-    print(f"Error general al conectar con Google Sheets: {e}")
+    logger.error(f"Error general al conectar con Google Sheets: {e}")
     exit()
 
 # ───── FUNCIONES AUXILIARES ─────
 def guardar_en_sheet(sheet_object, data):
+    """Guarda una nueva fila en la hoja de cálculo."""
     row_data = [
         data.get("movimiento", ""),
         data.get("descripcion", ""),
@@ -75,28 +87,32 @@ def guardar_en_sheet(sheet_object, data):
     ]
     try:
         sheet_object.append_row(row_data)
-        print(f"Datos guardados en {sheet_object.title}: {row_data}")
+        logger.info(f"Datos guardados en {sheet_object.title}: {row_data}")
     except Exception as e:
-        print(f"Error al guardar en {sheet_object.title}: {e}")
+        logger.error(f"Error al guardar en {sheet_object.title}: {e}")
 
 def calcular_saldo_desde_movimientos(sheet_object):
+    """
+    Calcula el saldo total de una cuenta sumando créditos y restando débitos.
+    Maneja saldos negativos correctamente.
+    """
     saldo_actual = 0.0
     try:
         all_data = sheet_object.get_all_values()
         if not all_data or len(all_data) < 2:  # No hay datos o solo el encabezado
             return 0.0
+        
         # Empezar desde la segunda fila (índice 1) para omitir el encabezado
         for row_index, row in enumerate(all_data):
             if row_index == 0:
-                continue # Saltar la primera fila (encabezado)
+                continue 
             
             # Asegurarse de que la fila tenga suficientes columnas
             if len(row) > 2:
                 try:
                     movimiento_tipo = row[0].strip().lower()
-                    # Eliminar comas para asegurar la correcta conversión a número
-                    monto_str = row[2].strip().replace(',', '')
-                    # Usar int(float()) para manejar montos que puedan estar como "100.0"
+                    # Eliminar comas, espacios y otros caracteres para una conversión limpia a número
+                    monto_str = row[2].strip().replace(',', '').replace('$', '').replace(' ', '')
                     monto = int(float(monto_str))
                     
                     if movimiento_tipo == "crédito":
@@ -104,11 +120,12 @@ def calcular_saldo_desde_movimientos(sheet_object):
                     elif movimiento_tipo == "débito":
                         saldo_actual -= monto
                 except (ValueError, IndexError):
-                    # Ignorar filas con datos inválidos o faltantes
+                    # Ignorar filas con datos inválidos o faltantes para evitar un fallo total
+                    logger.warning(f"Fila con datos inválidos, se omite: {row}")
                     continue
         return saldo_actual
     except Exception as e:
-        print(f"Error al calcular saldo: {e}")
+        logger.error(f"Error al calcular saldo en {sheet_object.title}: {e}")
         return 0.0
 
 def obtener_ultimos_movimientos(sheet_object, num_movimientos=10):
@@ -122,8 +139,8 @@ def obtener_ultimos_movimientos(sheet_object, num_movimientos=10):
         if not all_data or len(all_data) < 2:
             return []
         
-        # Obtener los últimos movimientos (sin el encabezado, y en orden cronológico inverso)
-        recent_moves = all_data[1:][-num_movimientos:][::-1] # [::-1] para invertir el orden y ver los más recientes primero
+        # Obtener los últimos movimientos (sin el encabezado)
+        recent_moves = all_data[1:][-num_movimientos:][::-1] 
         
         table_rows_raw = []
         for move in recent_moves:
@@ -135,7 +152,7 @@ def obtener_ultimos_movimientos(sheet_object, num_movimientos=10):
             if len(move) > 2 and move[2].strip():
                 try:
                     # Formato de miles, sin el símbolo de dólar aún para calcular el ancho correctamente
-                    monto_val_formatted = f"{int(float(move[2])):,}"
+                    monto_val_formatted = f"{int(float(move[2].replace(',', ''))):,}"
                 except ValueError:
                     monto_val_formatted = "Error"
             
@@ -146,14 +163,14 @@ def obtener_ultimos_movimientos(sheet_object, num_movimientos=10):
         
         return table_rows_raw
     except Exception as e:
-        print(f"Error al obtener últimos movimientos: {e}")
+        logger.error(f"Error al obtener últimos movimientos: {e}")
         return []
 
 # Función auxiliar para escapar texto para MarkdownV2
 def escape_markdown_v2(text: str) -> str:
     """Escapa caracteres especiales de MarkdownV2."""
     special_chars = r'_*[]()~`>#+-=|{}.!'
-    return re.sub(f'([{re.escape(special_chars)}])', r'\\\1', text)
+    return re.sub(f'([{re.escape(special_chars)}])', r'\\\1', str(text))
 
 # ───── MANEJADORES DE CONVERSACIÓN ─────
 async def salir_sesion(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -301,17 +318,16 @@ async def monto(update: Update, context: ContextTypes.DEFAULT_TYPE):
     opciones_monto_keyboard = [predefined_amounts_str, [VOLVER_AL_MENU_OPTION]]
 
     try:
-        if monto_str_input in predefined_amounts_str:
-            monto_valor = int(monto_str_input)
-        else:
-            cleaned_monto_str = monto_str_input.replace('$', '').replace(',', '')
-            
-            match = re.match(r'^-?\d+', cleaned_monto_str)
-            if match:
-                cleaned_monto_str = match.group(0)
-            
-            monto_valor = int(cleaned_monto_str)
+        # Se limpia el string de entrada para asegurar una correcta conversión
+        cleaned_monto_str = re.sub(r'[^\d\.]', '', monto_str_input)
+        
+        # Validar que el monto no sea vacío
+        if not cleaned_monto_str:
+            raise ValueError
+        
+        monto_valor = int(float(cleaned_monto_str))
 
+        # Validación principal: el monto debe ser un número positivo.
         if monto_valor <= 0:
             await update.message.reply_text(
                 "❌ Monto inválido\\. Debe ser un número entero positivo\\. Intente de nuevo:\n"
@@ -399,7 +415,7 @@ async def fecha(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def ver_saldo_seleccion_cuenta(update: Update, context: ContextTypes.DEFAULT_TYPE):
     opcion = update.message.text.strip()
-        
+    
     selected_sheet_for_saldo = None
     account_name = ""
 
@@ -415,6 +431,7 @@ async def ver_saldo_seleccion_cuenta(update: Update, context: ContextTypes.DEFAU
 
     if selected_sheet_for_saldo:
         saldo = calcular_saldo_desde_movimientos(selected_sheet_for_saldo)
+        # Formateo del saldo para que se muestre correctamente, incluso si es negativo
         await update.message.reply_text(f"💰 Su saldo actual en \\'{escape_markdown_v2(account_name)}\\' es: \\${saldo:,.0f}", parse_mode='MarkdownV2')
     else:
         await update.message.reply_text("🚫 Hubo un error al seleccionar la cuenta\\. Por favor, intente de nuevo\\.", parse_mode='MarkdownV2')
@@ -447,6 +464,7 @@ async def ver_ultimos_movimientos_seleccion_cuenta(update: Update, context: Cont
         if ultimos_movimientos_data:
             headers = ["Fecha", "Tipo", "Monto", "Descripción"]
             
+            # Calcular el ancho máximo para cada columna para una alineación perfecta
             max_widths = [len(h) for h in headers] 
             
             for row_data in ultimos_movimientos_data:
@@ -528,7 +546,7 @@ def main():
             ],
             DESCRIPCION: [
                 MessageHandler(filters.Regex(f"^{re.escape(VOLVER_AL_MENU_OPTION)}$") & ~filters.COMMAND, volver_al_menu),
-                MessageHandler(filters.TEXT & ~filters.COMMAND, descripcion), # Se referencia la función 'descripcion' aquí
+                MessageHandler(filters.TEXT & ~filters.COMMAND, descripcion), 
             ],
             MONTO: [
                 MessageHandler(filters.Regex(f"^{re.escape(VOLVER_AL_MENU_OPTION)}$") & ~filters.COMMAND, volver_al_menu),
@@ -552,7 +570,7 @@ def main():
 
     application.add_handler(conv_handler)
     
-    print("Bot iniciando... Presione Ctrl+C para detener.")
+    logger.info("Bot iniciando... Presione Ctrl+C para detener.")
     application.run_polling()
 
 if __name__ == "__main__":

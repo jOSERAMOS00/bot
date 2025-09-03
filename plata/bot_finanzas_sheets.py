@@ -216,7 +216,7 @@ async def menu_principal(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif opcion == "1":
         reply_keyboard = [["1", "2"], [VOLVER_AL_MENU_OPTION]]
         await update.message.reply_text(
-            "📝 Por favor, seleccione la cuenta para el registro:\n"
+            "📝 Por favor, seleccione la cuenta para el registro:\n\n"
             "1️⃣ Personal\n"
             "2️⃣ Negocio\n"
             f"{VOLVER_AL_MENU_OPTION}️⃣ Volver al menú",
@@ -268,7 +268,7 @@ async def tipo_cuenta(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     reply_keyboard = [["1", "2"], [VOLVER_AL_MENU_OPTION]]
     await update.message.reply_text(
-        "➡️ Indique el tipo de movimiento:\n"
+        "➡️ Indique el tipo de movimiento:\n\n"
         "1️⃣ Crédito \\(\\+\\)\n"
         "2️⃣ Débito \\(\\-\\)\n"
         f"{VOLVER_AL_MENU_OPTION}️⃣ Volver al menú",
@@ -288,7 +288,7 @@ async def tipo_movimiento(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     context.user_data.setdefault("temp_data", {})["movimiento"] = movimiento
     await update.message.reply_text(
-        "✍️ ::::: DESCRIPCION MOVIENTO ::::: ",
+        "✍️ ::::: Descripcion del Movimiento ::::: ",
         parse_mode='MarkdownV2'
     )
     return DESCRIPCION
@@ -300,9 +300,7 @@ async def descripcion(update: Update, context: ContextTypes.DEFAULT_TYPE):
     opciones_monto = [["10000", "20000", "50000"], [VOLVER_AL_MENU_OPTION]]
 
     await update.message.reply_text(
-        "💲 Por favor, ingrese el monto \\(número entero sin decimales\\):\n"
-        "O elija una opción rápida:\n"
-        f"{VOLVER_AL_MENU_OPTION}️⃣ Volver al menú",
+        "💲 ::::: Monto ::::: ",
         reply_markup=ReplyKeyboardMarkup(opciones_monto, one_time_keyboard=True, resize_keyboard=True),
         parse_mode='MarkdownV2'
     )
@@ -350,8 +348,7 @@ async def monto(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     reply_keyboard_fecha = [["Hoy", "Ayer", "Anteayer"], [VOLVER_AL_MENU_OPTION]]
     await update.message.reply_text(
-        "🗓️ Seleccione o ingrese la fecha del movimiento \\(YYYY\\-MM\\-DD\\):\n"
-        f"{VOLVER_AL_MENU_OPTION}️⃣ Volver al menú",
+        "🗓️ ::::: Fecha ::::: ",
         reply_markup=ReplyKeyboardMarkup(reply_keyboard_fecha, one_time_keyboard=True, resize_keyboard=True),
         parse_mode='MarkdownV2'
     )
@@ -409,7 +406,9 @@ async def fecha(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(
         f"✅ Movimiento registrado exitosamente en \\'{escape_markdown_v2(account_name)}\\'\\.\n"
-        f"💰 Su saldo actual en \\'{escape_markdown_v2(account_name)}\\' es: \\${escaped_saldo_text}\n\n" # Usar escaped_saldo_text
+        f"------------------------------------------------.\n"
+        f"💰 Su saldo actual en \\'{escape_markdown_v2(account_name)}\\' es: ::::  \\${escaped_saldo_text}\n\n" # Usar escaped_saldo_text
+          f"------------------------------------------------.\n"
         f"¿Qué desea hacer ahora\\?\n"
         "1️⃣ Registrar un nuevo movimiento\n"
         "2️⃣ Consultar saldo\n"
@@ -590,4 +589,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 

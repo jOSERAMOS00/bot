@@ -288,8 +288,7 @@ async def tipo_movimiento(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     context.user_data.setdefault("temp_data", {})["movimiento"] = movimiento
     await update.message.reply_text(
-        "✍️ Por favor, ingrese una descripción para el movimiento:\n"
-        f"O escriba '{VOLVER_AL_MENU_OPTION}' para volver al menú\\.",
+        "✍️ ::::: DESCRIPCION MOVIENTO ::::: ",
         parse_mode='MarkdownV2'
     )
     return DESCRIPCION
@@ -591,3 +590,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
